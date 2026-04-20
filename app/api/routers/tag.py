@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 
-from app.api.dependencies import TagServiceDep, PaginationDep
+from app.api.dependencies import TagServiceDep, PaginationDep, get_current_user
 from app.api.schemas.tag import TagPageResponse, TagCreateSchema, TagReadSchema
 
 router = APIRouter(
     prefix="/tag",
     tags=["tag"],
+    dependencies=[Depends(get_current_user)],
 )
 
 @router.get("/", response_model=TagPageResponse)
