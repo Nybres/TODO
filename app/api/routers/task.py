@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.dependencies import TaskServiceDep, PaginationDep, UserServiceDep, UserDep
-from app.api.schemas.task import TaskPageResponse, TaskCreateSchema, TaskReadSchema
+from app.api.schemas.task import TaskPageResponse, TaskCreateSchema, TaskReadSchema, TaskUpdateSchema
 
 router = APIRouter(
     prefix="/task",
@@ -25,9 +25,20 @@ async def add(
     return await service.add(task, current_user)
 
 
-async def update():
-    pass
+@router.patch('/{task_id}', response_model=TaskReadSchema)
+async def update(
+        task_id: int,
+        task_data: TaskUpdateSchema,
+        service: TaskServiceDep,
+        current_user: UserDep,
+):
+    return await service.update(task_id, task_data, current_user)
 
 
-async def delete():
-    pass
+@router.delete('/{task_id}')
+async def delete(
+        task_id: int,
+        service: TaskServiceDep,
+        current_user: UserDep,
+):
+    await service.delete(task_id, current_user)

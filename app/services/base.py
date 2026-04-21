@@ -22,7 +22,10 @@ class BaseService(Generic[T]):
         return entity
 
     async def _update(self, entity):
-        return await self._add(entity)
+        # return await self._add(entity)
+        await self.session.commit()
+        await self.session.refresh(entity)
+        return entity
 
     async def _delete(self, entity):
         await self.session.delete(entity)

@@ -25,6 +25,13 @@ class TaskReadSchema(BaseTask):
     updated_at: datetime
     tags: list[TagReadSchema] = []
 
+class TaskUpdateSchema(BaseTask):
+    title: str | None = None
+    description: str | None = None
+    status: TaskStatus | None = None
+    priority: TaskPriority | None = None
+    due_date: datetime | None = None
+    tag_ids: list[int] | None = None
 
 class TaskPageResponse(PaginatedResponse[TaskReadSchema]):
     pass
