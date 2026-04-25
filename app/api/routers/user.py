@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
-from app.api.dependencies import UserServiceDep
-from app.api.schemas.user import UserCreateSchema, UserReadSchema
+from app.api.dependencies import UserServiceDep, UserDep, PaginationDep
+from app.api.schemas.user import UserCreateSchema, UserReadSchema, UserListSchema
 from app.core.security import TokenData
 
 router = APIRouter(
@@ -32,3 +32,11 @@ async def login_user(
 @router.get('/logout')
 async def logout_user():
     return {"message": "Logged out"}
+
+@router.get('/users', response_model=UserListSchema)
+async def get_users(
+        service: UserServiceDep,
+        pagination: PaginationDep,
+        current_user: UserDep,
+):
+    return await service.get_users(pagination, current_user)

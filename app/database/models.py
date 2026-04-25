@@ -51,7 +51,8 @@ class User(SQLModel, table=True):
     tasks: List["Task"] = Relationship(back_populates="owner")
     shared_tasks: List["Task"] = Relationship(
         back_populates="shared_with",
-        link_model=SharedTask
+        link_model=SharedTask,
+        sa_relationship_kwargs = {"lazy": "selectin"}
     )
 
 
@@ -93,5 +94,6 @@ class Task(SQLModel, table=True):
 
     shared_with: List[User] = Relationship(
         back_populates="shared_tasks",
-        link_model=SharedTask
+        link_model=SharedTask,
+        sa_relationship_kwargs={"lazy": "selectin"}
     )

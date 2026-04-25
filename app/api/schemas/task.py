@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from app.api.schemas.pagination import PaginatedResponse
 from app.api.schemas.tag import TagReadSchema
+from app.api.schemas.user import UserReadSchema
 from app.database.models import TaskStatus, TaskPriority
 
 
@@ -24,6 +25,8 @@ class TaskReadSchema(BaseTask):
     created_at: datetime
     updated_at: datetime
     tags: list[TagReadSchema] = []
+    shared_with: list[UserReadSchema] = []
+
 
 class TaskUpdateSchema(BaseTask):
     title: str | None = None
@@ -33,5 +36,14 @@ class TaskUpdateSchema(BaseTask):
     due_date: datetime | None = None
     tag_ids: list[int] | None = None
 
+
 class TaskPageResponse(PaginatedResponse[TaskReadSchema]):
     pass
+
+
+class TaskShareSchema(BaseModel):
+    shared_with_user_id: int
+
+
+class TaskUpdateSharedSchema(BaseModel):
+    status: TaskStatus

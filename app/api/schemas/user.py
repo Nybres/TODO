@@ -1,5 +1,7 @@
 from pydantic import BaseModel,EmailStr
 
+from app.api.schemas.pagination import PaginatedResponse
+
 
 class BaseUserSchema(BaseModel):
     name: str
@@ -10,3 +12,8 @@ class UserCreateSchema(BaseUserSchema):
 
 class UserReadSchema(BaseUserSchema):
     id: int
+    name: str
+    email: str
+
+class UserListSchema(PaginatedResponse[UserReadSchema]):
+    pass

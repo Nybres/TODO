@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from passlib.context import CryptContext
 
+from app.api.schemas.pagination import PaginationParams
 from app.api.schemas.user import UserCreateSchema
 from app.services.base import BaseService
 from app.database.models import User
@@ -27,6 +28,13 @@ class UserService(BaseService):
 
     async def login(self, email: str, password: str) -> str:
         return await self._generate_token(email, password)
+
+    async def get_users(self, pagination: PaginationParams, current_user: User) ->dict:
+        query = select(self.model).where(self.model.id != current_user.id)
+        query = self.apply_sorting(query, "name", pagination.order)
+        paginated_data = await self._get_paginated_result(query, pagination)
+        return paginated_data
+
 
     async def _add_user(self, data: dict) -> User:
         try:
