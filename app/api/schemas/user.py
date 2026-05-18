@@ -1,4 +1,4 @@
-from pydantic import BaseModel,EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 from app.api.schemas.pagination import PaginatedResponse
 
@@ -14,6 +14,8 @@ class UserReadSchema(BaseUserSchema):
     id: int
     name: str
     email: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 class UserListSchema(PaginatedResponse[UserReadSchema]):
     pass

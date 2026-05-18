@@ -40,3 +40,9 @@ async def get_users(
         current_user: UserDep,
 ):
     return await service.get_users(pagination, current_user)
+
+@router.get('/me', response_model=UserReadSchema)
+async def get_me(
+    current_user: UserDep,
+):
+    return current_user

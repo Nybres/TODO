@@ -1,12 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.schemas.dashboard import DashboardStats, DashboardResponse
 from app.api.schemas.pagination import PaginationParams
-from app.api.schemas.task import TaskCreateSchema, TaskUpdateSchema, TaskShareSchema, TaskUpdateSharedSchema
-from app.database.models import Task, User, TaskTag, SharedTask, Tag
+from app.api.schemas.task import TaskCreateSchema, TaskUpdateSchema, TaskShareSchema, TaskUpdateSharedSchema, \
+    TaskReadSchema
+from app.database.models import Task, User, TaskTag, SharedTask, Tag, TaskStatus
 from app.services.base import BaseService
 
 
@@ -30,6 +32,7 @@ class TaskService(BaseService[Task]):
             raise HTTPException(status_code=404, detail="Task not found")
 
         return task
+
 
     async def _get_shared_task(self, task_id: int, user_id: int) -> Task:
         task = await self.session.scalar(
@@ -173,3 +176,61 @@ class TaskService(BaseService[Task]):
         task = await self._get_shared_task(task_id, current_user.id)
         task.status = task_data.status
         return await self._update(task)
+
+
+    async def get_dashboard(self, current_user: User, limit: int = 5) -> DashboardResponse:
+        recent_q = (
+            select(Task)
+            .where(
+                Task.user_id == current_user.id,
+                Task.deleted_at.is_(None),
+            )
+            .order_by(Task.created_at.desc())
+            .limit(limit)
+        )
+        recent_res = await self.session.execute(recent_q)
+        recent_tasks = recent_res.scalars().all()
+
+        now = datetime.now()
+
+        total_q = (
+            select(func.count())
+            .select_from(Task)
+            .where(
+                Task.user_id == current_user.id,
+                Task.deleted_at.is_(None),
+            )
+        )
+
+        completed_q = (
+            select(func.count())
+            .select_from(Task)
+            .where(Task.user_id == current_user.id, Task.deleted_at.is_(None), Task.status == TaskStatus.done)
+        )
+
+        overdue_q = (
+            select(func.count())
+            .select_from(Task)
+            .where(
+                Task.user_id == current_user.id,
+                Task.deleted_at.is_(None),
+                Task.status != TaskStatus.done,
+                Task.due_date.is_not(None),
+                Task.due_date < now,
+            )
+        )
+
+        total_res = await self.session.execute(total_q)
+        completed_res = await self.session.execute(completed_q)
+        overdue_res = await self.session.execute(overdue_q)
+
+        stats = DashboardStats(
+            total=total_res.scalar() or 0,
+            completed=completed_res.scalar() or 0,
+            overdue=overdue_res.scalar() or 0,
+        )
+
+        return DashboardResponse(
+            recent_tasks=recent_tasks,
+            stats=stats,
+        )

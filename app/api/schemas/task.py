@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.api.schemas.pagination import PaginatedResponse
 from app.api.schemas.tag import TagReadSchema
@@ -26,6 +26,8 @@ class TaskReadSchema(BaseTask):
     updated_at: datetime
     tags: list[TagReadSchema] = []
     shared_with: list[UserReadSchema] = []
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TaskUpdateSchema(BaseTask):

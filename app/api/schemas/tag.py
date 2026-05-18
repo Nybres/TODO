@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
 from app.api.schemas.pagination import PaginatedResponse
@@ -12,6 +12,8 @@ class TagCreateSchema(BaseTag):
 
 class TagReadSchema(BaseTag):
     id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 class TagPageResponse(PaginatedResponse[TagReadSchema]):
     top_priority_tag: str | None = None
